@@ -2,7 +2,7 @@
   "name": "vscode-grok-acp",
   "displayName": "Grok ACP Host (unofficial)",
   "description": "Open-source ACP host for the Grok Build CLI. Not affiliated with xAI.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "humfrid",
   "license": "MIT",
   "private": false,
@@ -15,13 +15,18 @@
   "activationEvents": [
     "onCommand:grokAcp.open"
   ],
-  "main": "./out/extension.js",
+  "main": "./out/index.js",
   "types": "./out/index.d.ts",
   "exports": {
     ".": {
       "types": "./out/index.d.ts",
       "require": "./out/index.js",
       "default": "./out/index.js"
+    },
+    "./extension": {
+      "types": "./out/extension.d.ts",
+      "require": "./out/extension.js",
+      "default": "./out/extension.js"
     }
   },
   "files": [
