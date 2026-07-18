@@ -1,5 +1,4 @@
 node_modules/
-out/
 dist/
 *.vsix
 .DS_Store
@@ -7,3 +6,5 @@ dist/
 .env
 .env.*
 .vscode-test/
+# `out/` is committed so github: installs work without a prepare/tsc step.
+# Always recompile before release: npm run compile

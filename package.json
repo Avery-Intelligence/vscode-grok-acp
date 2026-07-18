@@ -53,6 +53,7 @@
     "watch": "tsc -watch -p ./",
     "test": "node --test out/**/*.test.js",
     "check:boundary": "node scripts/check-boundary.mjs",
+    "prepare": "npm run compile",
     "prepublishOnly": "npm run check:boundary && npm run compile",
     "vscode:prepublish": "npm run compile",
     "package": "vsce package --no-dependencies"
