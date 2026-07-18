@@ -39,10 +39,6 @@ exports.deactivate = deactivate;
 const vscode = __importStar(require("vscode"));
 const cli_path_1 = require("./cli-path");
 const session_1 = require("./acp/session");
-/**
- * Thin dev host. Product UIs (e.g. Humfrid) should depend on the library
- * exports and own their own webviews — not ship this command as the product.
- */
 function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand("grokAcp.open", async () => {
         const configured = vscode.workspace
@@ -55,9 +51,37 @@ function activate(context) {
         }
         const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? process.cwd();
         try {
-            const session = await (0, session_1.createGrokAcpSession)({ cliPath, cwd });
-            void vscode.window.showInformationMessage(`Grok ACP host ready (${cliPath}). Session scaffold only — implement UI in your product extension.`);
-            context.subscriptions.push({ dispose: () => session.dispose() });
+            const session = await (0, session_1.createGrokAcpSession)({
+                cliPath,
+                cwd,
+                onServerRequest: async (req) => {
+                    if (req.method.toLowerCase().includes("permission")) {
+                        const pick = await vscode.window.showQuickPick([
+                            { label: "Allow once", id: "allow-once" },
+                            { label: "Allow always", id: "allow-always" },
+                            { label: "Reject", id: "reject" },
+                        ], { placeHolder: `Grok permission: ${req.method}` });
+                        if (!pick || pick.id === "reject") {
+                            req.respond({
+                                outcome: { outcome: "selected", optionId: "reject" },
+                            });
+                            return;
+                        }
+                        req.respond({
+                            outcome: { outcome: "selected", optionId: pick.id },
+                        });
+                        return;
+                    }
+                    req.reject(-32601, `Unhandled: ${req.method}`);
+                },
+            });
+            const result = await vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: "Grok ACP smoke prompt…",
+                cancellable: false,
+            }, async () => session.prompt("Reply with exactly the single word: pong"));
+            void vscode.window.showInformationMessage(`Grok ACP OK (session ${session.sessionId.slice(0, 8)}…): ${result.text.slice(0, 80)}`);
+            session.dispose();
         }
         catch (err) {
             const message = err instanceof Error ? err.message : String(err);
@@ -68,7 +92,6 @@ function activate(context) {
 function deactivate() {
     // no-op
 }
-// Public library surface for product extensions
 var session_2 = require("./acp/session");
 Object.defineProperty(exports, "createGrokAcpSession", { enumerable: true, get: function () { return session_2.createGrokAcpSession; } });
 var cli_path_2 = require("./cli-path");

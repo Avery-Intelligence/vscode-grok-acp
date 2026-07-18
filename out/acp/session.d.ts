@@ -1,25 +1,71 @@
+import { JsonRpcPeer, type JsonRpcId } from "./jsonrpc";
+/** ACP McpServer — env/headers are name/value arrays (not plain objects). */
+export interface McpServerConfig {
+    name: string;
+    /** stdio (default if command set) | http | sse */
+    type?: "stdio" | "http" | "sse";
+    command?: string;
+    args?: string[];
+    env?: Array<{
+        name: string;
+        value: string;
+    }> | Record<string, string>;
+    cwd?: string | null;
+    url?: string;
+    headers?: Array<{
+        name: string;
+        value: string;
+    }> | Record<string, string>;
+}
 export interface CreateGrokAcpSessionOptions {
-    /** Absolute path to the `grok` binary */
     cliPath: string;
-    /** Working directory for the agent */
     cwd: string;
-    /** Extra env (do not inject private product secrets here) */
     env?: NodeJS.ProcessEnv;
-    /** Args after `agent` (default: `stdio`) */
     agentArgs?: string[];
+    /** Generic MCP servers passed to session/new (no product hardcoding). */
+    mcpServers?: McpServerConfig[];
+    clientName?: string;
+    clientVersion?: string;
+    requestTimeoutMs?: number;
+    /**
+     * Handle server→client requests (permissions, etc.).
+     * Must call respond/reject appropriately.
+     */
+    onServerRequest?: (req: {
+        id: JsonRpcId;
+        method: string;
+        params: unknown;
+        respond: (result: unknown) => void;
+        reject: (code: number, message: string) => void;
+    }) => void | Promise<void>;
+}
+export interface PromptContent {
+    type: "text";
+    text: string;
+}
+export interface PromptResult {
+    stopReason?: string;
+    text: string;
+    thoughts: string;
+    raw: unknown;
+}
+export interface SessionUpdateEvent {
+    sessionId?: string;
+    sessionUpdate?: string;
+    update: Record<string, unknown>;
+    raw: unknown;
 }
 export interface GrokAcpSession {
     readonly pid: number | undefined;
-    /** Raw ACP JSON-RPC write (line-delimited JSON) — protocol wiring is iterative */
-    send(message: unknown): void;
-    onNotification(handler: (msg: unknown) => void): () => void;
+    readonly sessionId: string;
+    readonly peer: JsonRpcPeer;
+    prompt(text: string, extra?: PromptContent[]): Promise<PromptResult>;
+    setMode(modeId: string): Promise<unknown>;
+    onUpdate(handler: (ev: SessionUpdateEvent) => void): () => void;
+    onNotification(handler: (method: string, params: unknown) => void): () => void;
     dispose(): void;
+    /** @deprecated use peer / prompt */
+    send(message: unknown): void;
 }
-/**
- * Spawns `grok agent stdio` and exposes a minimal session handle.
- *
- * Full ACP initialize/session/new handshake will land in follow-up commits.
- * Product extensions should build UI on top of this host, not re-spawn CLI ad hoc.
- */
 export declare function createGrokAcpSession(options: CreateGrokAcpSessionOptions): Promise<GrokAcpSession>;
 //# sourceMappingURL=session.d.ts.map

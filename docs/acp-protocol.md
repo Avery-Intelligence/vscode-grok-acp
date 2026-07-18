@@ -59,10 +59,35 @@ Not affiliated with xAI. Notes for implementers of this host only.
 
 Then `session/update` notifications and `_x.ai/mcp/init_progress`.
 
-## MCP attachment (product concern)
+## MCP attachment
 
 Agent advertises `mcpCapabilities.http` and `sse`.  
-`session/new` accepts `mcpServers` array (shape TBD in Phase 1 — probe HTTP MCP entries with auth headers).
+`session/new` requires `mcpServers` (array; may be empty).
+
+### Stdio (verified)
+
+```json
+{
+  "name": "local",
+  "command": "/abs/path/to/server",
+  "args": [],
+  "env": [],
+  "cwd": null
+}
+```
+
+`env` is `[{ "name": "K", "value": "V" }]`, not a map.
+
+### HTTP (verified with Grok 0.2.103)
+
+```json
+{
+  "type": "http",
+  "name": "humfrid",
+  "url": "https://example.com/mcp",
+  "headers": [{ "name": "Authorization", "value": "Bearer …" }]
+}
+```
 
 **Rule for this OSS package:** accept consumer-provided MCP server configs only. Never hardcode Momental/Humfrid endpoints.
 
