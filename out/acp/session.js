@@ -81,7 +81,7 @@ async function createGrokAcpSession(options) {
         },
         sessionId,
         peer,
-        async prompt(text, extra = []) {
+        async prompt(textOrContent, extra = []) {
             const chunks = [];
             const thoughts = [];
             const onUpd = (ev) => {
@@ -98,7 +98,9 @@ async function createGrokAcpSession(options) {
             };
             bus.on("update", onUpd);
             try {
-                const prompt = [{ type: "text", text }, ...extra];
+                const prompt = Array.isArray(textOrContent)
+                    ? [...textOrContent, ...extra]
+                    : [{ type: "text", text: textOrContent }, ...extra];
                 const raw = await peer.request("session/prompt", { sessionId, prompt }, timeout);
                 return {
                     stopReason: raw?.stopReason,

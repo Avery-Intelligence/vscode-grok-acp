@@ -38,10 +38,14 @@ export interface CreateGrokAcpSessionOptions {
   }) => void | Promise<void>;
 }
 
-export interface PromptContent {
-  type: "text";
-  text: string;
-}
+export type PromptContent =
+  | { type: "text"; text: string }
+  | {
+      /** Base64 image (no data: URL prefix). Verified against Grok Build ACP. */
+      type: "image";
+      data: string;
+      mimeType: string;
+    };
 
 export interface PromptResult {
   stopReason?: string;
@@ -61,7 +65,14 @@ export interface GrokAcpSession {
   readonly pid: number | undefined;
   readonly sessionId: string;
   readonly peer: JsonRpcPeer;
-  prompt(text: string, extra?: PromptContent[]): Promise<PromptResult>;
+  /**
+   * Send a user turn. Pass a string, or a full content array (text + images).
+   * Optional `extra` content is appended when the first arg is a string.
+   */
+  prompt(
+    textOrContent: string | PromptContent[],
+    extra?: PromptContent[],
+  ): Promise<PromptResult>;
   setMode(modeId: string): Promise<unknown>;
   onUpdate(handler: (ev: SessionUpdateEvent) => void): () => void;
   onNotification(handler: (method: string, params: unknown) => void): () => void;
@@ -178,7 +189,10 @@ export async function createGrokAcpSession(
     },
     sessionId,
     peer,
-    async prompt(text: string, extra: PromptContent[] = []): Promise<PromptResult> {
+    async prompt(
+      textOrContent: string | PromptContent[],
+      extra: PromptContent[] = [],
+    ): Promise<PromptResult> {
       const chunks: string[] = [];
       const thoughts: string[] = [];
       const onUpd = (ev: SessionUpdateEvent) => {
@@ -196,7 +210,9 @@ export async function createGrokAcpSession(
       };
       bus.on("update", onUpd);
       try {
-        const prompt = [{ type: "text" as const, text }, ...extra];
+        const prompt: PromptContent[] = Array.isArray(textOrContent)
+          ? [...textOrContent, ...extra]
+          : [{ type: "text", text: textOrContent }, ...extra];
         const raw = await peer.request(
           "session/prompt",
           { sessionId, prompt },
