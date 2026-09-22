@@ -1,11 +1,12 @@
 {
   "name": "vscode-grok-acp",
   "displayName": "Grok ACP Host (unofficial)",
-  "description": "Open-source ACP host for the Grok Build CLI. Not affiliated with xAI.",
+  "description": "ACP host for the Grok Build CLI. Proprietary.",
   "version": "0.2.2",
   "publisher": "humfrid",
-  "license": "MIT",
-  "private": false,
+  "author": "Avery Intelligence Inc.",
+  "license": "UNLICENSED",
+  "private": true,
   "engines": {
     "vscode": "^1.98.0"
   },

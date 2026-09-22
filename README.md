@@ -1,6 +1,6 @@
 # vscode-grok-acp
 
-Open-source **Agent Client Protocol (ACP)** host library and thin VS Code extension for [Grok Build](https://x.ai/cli) (`grok agent stdio`).
+Proprietary **Agent Client Protocol (ACP)** host library and thin VS Code extension for [Grok Build](https://x.ai/cli) (`grok agent stdio`).
 
 **Not affiliated with, endorsed by, or sponsored by xAI.**  
 “Grok”, “Grok Build”, and “xAI” are trademarks of xAI; used here only to describe compatibility.
@@ -47,8 +47,5 @@ See [SECURITY.md](./SECURITY.md). This host only spawns the local `grok` process
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+Copyright (c) 2026 Avery Intelligence Inc. All rights reserved. Proprietary and confidential.
 
-## Contributing
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md). Generic ACP/host improvements belong here; product-specific features belong in private product repos.
